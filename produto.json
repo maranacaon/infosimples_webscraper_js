@@ -11,12 +11,25 @@
 			"{name:  Rubber Duck MK Ultra - Summer Version  \n             current price: Not available \n             old price:  \n             available: Not available}",
 			"{name:  Rubber Duck MK Ultra - Batman Version  \n             current price: \n                  $ 14.95\n                 \n             old price:  \n             available: Available}"
 		],
-		"properties": [],
+		"properties": [
+			{
+				"Color": "Various",
+				"Material": "Rubber",
+				"Shape": "Ducky",
+				"Size": "Medium",
+				"Weight": "1.5 kg",
+				"Radioactivity Level": "Low"
+			},
+			{
+				"undefined": "0 - 25ºC"
+			}
+		],
 		"reviews": [
 			"{user: Louisa Eliel\n              date: 28/07/2021\n              score: \n              comment: Very good rubber ducks, however I think they are a bit too big for me.\n            }",
 			"{user: Kairo Josué\n              date: 12/05/2021\n              score: \n              comment: Péssima qualidade. Já não fazem patos de borracha como antigamente.\n            }",
 			"{user: Victor Huey\n              date: 03/04/2021\n              score: \n              comment: Very good\n            }"
 		],
-		"reviews average score": "Average score: 3.3/5"
+		"average score": "Average score: 3.3/5",
+		"product URL": ""
 	}
 }

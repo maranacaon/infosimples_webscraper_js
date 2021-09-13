@@ -44,41 +44,41 @@ request(url, (error, response, html ) => {
         );
     })
 
-    // finalResponse['properties'] = [];
-    // $("table.pure-table pure-table-bordered").each((_idx, el) => {
-    //     const propertiesLabels = [];
-    //     if (index === 0) {
-    //       const label = $(el)
-    //         .find("b");
-    //       $(label).each((i, el) => {
-    //         propertiesLabels.push(
-    //           $(el)
-    //             .text()
-    //         );
-    //       });
-    //     }
-    //     const tds = $(el)
-    //         .find("td:nth-child(2)");
-    //     const propertiesValues = {};
-    //     $(tds).each((i, el) => {
-    //       propertiesValues[propertiesLabels[i]] = $(el).text();
-    //     });
-
-    //     finalResponse['properties'].push(propertiesValues);
-    //   });
-
     finalResponse['properties'] = [];
-    $('table.pure-table pure-table-bordered').each((_idx, el) => {
-        const label = $(el)
-            .find('b')
-            .text();
-        const value = $(el)
-            .find('td')
-            .text();
-        finalResponse['properties'].push(  
-            `{${label}: ${value}}`
-        );
-    })
+    $("table.pure-table").each((_idx, el) => {
+        const propertiesLabels = [];
+        if (_idx === 0) {
+          const label = $(el)
+            .find("b");
+          $(label).each((i, el) => {
+            propertiesLabels.push(
+              $(el)
+                .text()
+            );
+          });
+        }
+        const tds = $(el)
+            .find("td:nth-child(2)");
+        const propertiesValues = {};
+        $(tds).each((i, el) => {
+          propertiesValues[propertiesLabels[i]] = $(el).text();
+        });
+
+        finalResponse['properties'].push(propertiesValues);
+      });
+
+    // finalResponse['properties'] = [];
+    // $('table.pure-table bordered').each((_idx, el) => {
+    //     const label = $(el)
+    //         .find('b')
+    //         .text();
+    //     const value = $(el)
+    //         .find('td')
+    //         .text();
+    //     finalResponse['properties'].push(  
+    //         `{${label}: ${value}}`
+    //     );
+    // })
 
     finalResponse['reviews'] = [];
     $('div.review-box').each((_idc, el) => {
@@ -103,9 +103,9 @@ request(url, (error, response, html ) => {
         );
     })
 
-    finalResponse['average score'] = $('div#comments > h4').number();
+    finalResponse['average score'] = $('div#comments > h4').text();
     
-    finalResponse['product URL'] = $('h2#product_title').text();
+    finalResponse['product URL'] = $('').text();
 
     const finalResponseJSON = JSON.stringify({finalResponse}, null, '\t');
 
