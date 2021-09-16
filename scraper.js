@@ -14,10 +14,13 @@ request(url, (error, response, html ) => {
     finalResponse['brand'] = $('div.brand').text();
 
     finalResponse['categories'] = [];
-    $('nav.current-category').each((_idx, el) => {
-        const category = $(el).text().replace(/\n/g,", ")
+    $('nav.current-category > a').each((_idx, el) => {
+        const category = $(el)
+          .text()
+          .replace(/(\s|\&nbsp\;)+/gi, ' ')
         finalResponse['categories'].push(category)
     });
+    
 
     finalResponse['description'] = $('div.product-details > p').text().replace(/(\s|\&nbsp\;)+/gi, ' ');
 
@@ -26,30 +29,63 @@ request(url, (error, response, html ) => {
         const name = $(el)
             .find("div.sku-name")
             .text()
-            .replace(/(\s|\&nbsp\;)+/gi, ' ')
+            .replace(/(\s|\&nbsp\;)+/g, " ")
         const current_price = $(el)
             .find("div.sku-current-price")
             .text()
+            .replace(/(?!-)[^0-9.]/g, "")
         const old_price = $(el)
             .find('div.sku-old-price')
             .text()
+            .replace(/(?!-)[^0-9.]/g, "")
         const available = $(el)
             .find("i")
             .text()
+            .replace(/(\s|\&nbsp\;)+/g, ' ')
         finalResponse['skus'].push(  
-            `{name: ${name} 
-             current price: ${available === "Out of stock" ? "Not available" : current_price} 
-             old price: ${old_price} 
-             available: ${available === "Out of stock" ? "Not available" : "Available"}}`
+            {"name": name,
+             "current price": available === "Out of stock" ? null : parseFloat(current_price),
+             "old price": old_price === "" ? null : parseFloat(old_price),
+             "available": available === "Out of stock" ? false : true}
         );
     })
 
     finalResponse['properties'] = [];
-    $("table.pure-table").each((_idx, el) => {
+    const properties = [];
+    const additionalProperties = [];
+    $('table.pure-table').each((_idx, el) => {
+      const propertiesLabels = [];
+      if (_idx === 0) {
+        const label = $(el)
+          .find('b');
+        $(label).each((i, el) => {
+          propertiesLabels.push(
+            $(el)
+              .text()
+          );
+        });
+      }
+      const propertiesValues = [];
+      if (_idx === 0) {
+        const value = $(el)
+          .find('td:nth-child(2)');
+        $(value).each((i, el) => {
+          propertiesValues.push(
+            $(el)
+              .text()
+          );
+        });
+      }
+      for (var i = 0; i < propertiesLabels.length; i++){
+        properties[i] = {'label': propertiesLabels[i], 'value': propertiesValues[i]};
+      }
+    });
+
+    $('#additional-properties').each((_idx, el) => {
         const propertiesLabels = [];
         if (_idx === 0) {
           const label = $(el)
-            .find("b");
+            .find('b');
           $(label).each((i, el) => {
             propertiesLabels.push(
               $(el)
@@ -57,31 +93,28 @@ request(url, (error, response, html ) => {
             );
           });
         }
-        const tds = $(el)
-            .find("td:nth-child(2)");
-        const propertiesValues = {};
-        $(tds).each((i, el) => {
-          propertiesValues[propertiesLabels[i]] = $(el).text();
-        });
-
-        finalResponse['properties'].push(propertiesValues);
+        const propertiesValues = [];
+        if (_idx === 0) {
+          const value = $(el)
+            .find('td:nth-child(2)');
+          $(value).each((i, el) => {
+            propertiesValues.push(
+              $(el)
+                .text()
+            );
+          });
+        }
+        for (var i = 0; i < propertiesLabels.length; i++){
+          additionalProperties[i] = {'label': propertiesLabels[i], 'value': propertiesValues[i]};
+        }
       });
 
-    // finalResponse['properties'] = [];
-    // $('table.pure-table bordered').each((_idx, el) => {
-    //     const label = $(el)
-    //         .find('b')
-    //         .text();
-    //     const value = $(el)
-    //         .find('td')
-    //         .text();
-    //     finalResponse['properties'].push(  
-    //         `{${label}: ${value}}`
-    //     );
-    // })
+      finalResponse['properties'] = [...properties, ...additionalProperties]
+
+      
 
     finalResponse['reviews'] = [];
-    $('div.review-box').each((_idc, el) => {
+    $('div.review-box').each((_idx, el) => {
         const name = $(el)
             .find('.review-username')
             .text();
@@ -89,25 +122,28 @@ request(url, (error, response, html ) => {
             .find('.review-date')
             .text();
         const score = $(el)
-            .find('.review-score')
-            .text();
+            .find('.review-stars')
+            .text()
+            .split('★')
         const text = $(el)
             .find('p')
             .text();
         finalResponse['reviews'].push(
-            `{user: ${name}
-              date: ${date}
-              score: ${score}
-              comment: ${text}
-            }`
+            {"name": name,
+             "date": date,
+             "score": score.length -1,
+             "comment": text
+            }
         );
     })
 
-    finalResponse['average score'] = $('div#comments > h4').text();
+    const averageScore = $('div#comments > h4').text().match(/[0-5][.][0-9]/g);
+    const convertAverageScore = (parseFloat(averageScore));
+    finalResponse['reviews_average_score'] = convertAverageScore;
     
-    finalResponse['product URL'] = $('').text();
+    finalResponse['url'] = url
 
-    const finalResponseJSON = JSON.stringify({finalResponse}, null, '\t');
+    const finalResponseJSON = JSON.stringify(finalResponse, null, 2);
 
     fs.writeFile('produto.json', finalResponseJSON, (err) => {
         if (err) {
