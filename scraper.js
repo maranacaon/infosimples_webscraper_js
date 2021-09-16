@@ -10,9 +10,13 @@ request(url, (error, response, html ) => {
   if (!error && response.statusCode == 200) {
     const $ = cheerio.load(html);
 
+    // TITLE
     finalResponse['title'] = $('h2#product_title').text();
+
+    // BRAND
     finalResponse['brand'] = $('div.brand').text();
 
+    // CATEGORIES
     finalResponse['categories'] = [];
     $('nav.current-category > a').each((_idx, el) => {
         const category = $(el)
@@ -21,9 +25,10 @@ request(url, (error, response, html ) => {
         finalResponse['categories'].push(category)
     });
     
+    // DESCRIPTION
+    finalResponse['description'] = $('div.product-details > p').text().replace(/(\s|\&nbsp\;)+/g, " ");
 
-    finalResponse['description'] = $('div.product-details > p').text().replace(/(\s|\&nbsp\;)+/gi, ' ');
-
+    // SKUS
     finalResponse['skus'] = [];
     $('#product_S0002201, #product_S0002202, #product_S0002203').each((_idx, el) => {
         const name = $(el)
@@ -50,6 +55,7 @@ request(url, (error, response, html ) => {
         );
     })
 
+    // PROPERTIES
     finalResponse['properties'] = [];
     const properties = [];
     const additionalProperties = [];
@@ -111,8 +117,7 @@ request(url, (error, response, html ) => {
 
       finalResponse['properties'] = [...properties, ...additionalProperties]
 
-      
-
+    // REVIEWS
     finalResponse['reviews'] = [];
     $('div.review-box').each((_idx, el) => {
         const name = $(el)
@@ -137,12 +142,15 @@ request(url, (error, response, html ) => {
         );
     })
 
+    // AVERAGE_SCORE
     const averageScore = $('div#comments > h4').text().match(/[0-5][.][0-9]/g);
     const convertAverageScore = (parseFloat(averageScore));
     finalResponse['reviews_average_score'] = convertAverageScore;
     
+    // URL
     finalResponse['url'] = url
 
+    // JSON
     const finalResponseJSON = JSON.stringify(finalResponse, null, 2);
 
     fs.writeFile('produto.json', finalResponseJSON, (err) => {
